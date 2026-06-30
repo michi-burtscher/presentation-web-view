@@ -17,9 +17,11 @@ der Präsentation vorführen.
 
 - ✅ Online-URL **oder** lokale HTML/JS/CSS-Datei (echter Browser, kein iframe-Sandbox-Limit)
 - ✅ Voll interaktiv im Präsentationsmodus (Maus, Tastatur, JS)
-- ✅ Mehrere Bereiche pro Folie
+- ✅ Mehrere Frames pro Folie · Multi-Monitor · Presenter-View
 - ✅ Pfeiltasten / Bild↑↓ / Esc steuern die Präsentation weiter – auch während die Seite Fokus hat
-- ✅ Multi-Monitor
+- ✅ Pro Frame: Interaktiv/klick-durch, Stummschalten, Zoom, Auto-Neuladen
+- ✅ Portabel: relative Pfade **oder** HTML in die `.pptx` einbetten
+- ✅ Bearbeiten per Doppelklick · Vorschau ohne F5 · Fehler-/Offline-Fallback
 
 > Plattform: **Windows-Desktop-PowerPoint (64-Bit)**. Kein Mac/Web/Mobile (technisch bedingt,
 > da ein echter eingebetteter Browser genutzt wird).
@@ -43,15 +45,17 @@ danach das Setup erneut starten. Anschließend PowerPoint starten → Reiter **�
 
 ## Verwendung
 
-1. **Link setzen** (Reiter *Live Web*): Ist eine Form markiert, wird sie genutzt; sonst wird
-   automatisch ein Rechteck eingefügt. Anschließend **URL eingeben oder HTML-Datei wählen**.
-2. Form nach Wunsch positionieren/skalieren.
-3. **F5** – die Seite läuft live im Bereich.
-   - **Interaktion:** Klicks/Tippen gehen an die Seite.
+1. **Fenster erstellen** (Reiter *Live Web*): fügt einen *Live Web Frame* (Karte) ein und
+   öffnet den Dialog – **URL eingeben oder HTML-Datei wählen**, plus Optionen.
+2. Frame nach Wunsch positionieren/skalieren. Bearbeiten per **Doppelklick** oder **Optionen**.
+3. **F5** – die Seite läuft live im Frame.
+   - **Interaktion:** Klicks/Tippen gehen an die Seite (abschaltbar = klick-durch).
    - **Navigation:** Pfeiltasten, Bild↑/↓, **Esc** steuern die Präsentation – auch wenn die
      Seite gerade den Fokus hat.
 
-Weitere Buttons: **Datei ändern**, **Link entfernen**, **Neu laden**, **Anleitung**, **Info**.
+Pro Frame einstellbar (Dialog): Interaktiv, Stummschalten, Zoom %, Auto-Neuladen, Einbetten.
+Weitere Buttons: **Vorschau** (Live-Ansicht ohne F5), **Fenster entfernen**, **Neu laden**,
+**Anleitung**, **Info**. Konzeptdetails siehe [PLAN.md](PLAN.md).
 
 ## Aus dem Quellcode bauen (für Entwickler)
 

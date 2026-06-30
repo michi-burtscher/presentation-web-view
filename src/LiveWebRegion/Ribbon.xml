@@ -3,32 +3,40 @@
   <ribbon>
     <tabs>
       <tab id="liveWebTab" label="Live Web">
-        <group id="liveWebRegionGroup" label="Web-Link">
-          <button id="btnSetRegion"
-                  label="Link setzen"
+        <group id="liveWebFrameGroup" label="Frame">
+          <button id="btnCreate"
+                  label="Fenster erstellen"
                   size="large"
-                  imageMso="HyperlinkInsert"
-                  onAction="OnSetRegion"
-                  screentip="Web-Link setzen"
-                  supertip="Weist der markierten Form eine HTML-Datei zu (oder f&#252;gt ein Rechteck ein), die im Pr&#228;sentationsmodus live angezeigt wird." />
-          <button id="btnChangeFile"
-                  label="Datei &#228;ndern"
+                  imageMso="ShapeRectangle"
+                  onAction="OnCreateFrame"
+                  screentip="Live-Web-Fenster erstellen"
+                  supertip="F&#252;gt einen neuen Live Web Frame ein und &#246;ffnet die Konfiguration (URL oder HTML-Datei)." />
+          <button id="btnOptions"
+                  label="Optionen"
                   size="large"
-                  imageMso="FileOpen"
-                  onAction="OnChangeFile"
+                  imageMso="TablePropertiesDialog"
+                  onAction="OnOptions"
                   getEnabled="OnGetRegionSelected"
-                  screentip="HTML-Datei &#228;ndern"
-                  supertip="W&#228;hlt eine andere HTML-Datei f&#252;r die markierte Form." />
-          <button id="btnRemoveRegion"
-                  label="Link entfernen"
+                  screentip="Link &amp; Optionen"
+                  supertip="Bearbeitet Adresse und Optionen des markierten Frames (Zoom, Interaktiv, Stummschalten, Auto-Neuladen, Einbetten)." />
+          <button id="btnRemove"
+                  label="Fenster entfernen"
                   size="large"
                   imageMso="Delete"
-                  onAction="OnRemoveRegion"
+                  onAction="OnRemoveFrame"
                   getEnabled="OnGetRegionSelected"
-                  screentip="Web-Link entfernen"
-                  supertip="Entfernt die HTML-Zuordnung von der markierten Form." />
+                  screentip="Frame entfernen"
+                  supertip="Entfernt die Web-Zuordnung von der markierten Form." />
         </group>
         <group id="liveWebToolsGroup" label="Werkzeuge">
+          <toggleButton id="btnPreview"
+                  label="Vorschau"
+                  size="large"
+                  imageMso="ViewNormalViewPowerPoint"
+                  onAction="OnTogglePreview"
+                  getPressed="OnGetPreviewPressed"
+                  screentip="Vorschau im Bearbeitungsmodus"
+                  supertip="Zeigt die Website des markierten Frames in einem Vorschaufenster &#8211; ohne F5." />
           <button id="btnReload"
                   label="Neu laden"
                   size="large"

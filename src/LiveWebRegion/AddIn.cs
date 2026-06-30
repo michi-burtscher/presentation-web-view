@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 namespace LiveWebRegion
 {
@@ -22,6 +23,9 @@ namespace LiveWebRegion
         private dynamic _app;     // PowerPoint.Application (late-bound)
         private dynamic _ribbon;  // Office.IRibbonUI (late-bound)
         private OverlayManager _overlays;
+        private AppEventConnector _events;
+        private Control _ui;      // UI-thread invoker (deferred dialogs)
+        private bool _previewEnabled;
 
         #region IDTExtensibility2
 
@@ -32,14 +36,24 @@ namespace LiveWebRegion
                 if (Application != IntPtr.Zero)
                     _app = Marshal.GetObjectForIUnknown(Application);
                 Log.Info("OnConnection. mode=" + ConnectMode + " host=" + SafeProbe());
+
+                _ui = new Control();
+                var _ = _ui.Handle; // realize handle on the UI thread
+
+                _events = new AppEventConnector();
+                _events.Connect((object)_app, HandleDoubleClick);
             }
             catch (Exception ex) { Log.Error("OnConnection failed", ex); }
         }
 
         public void OnDisconnection(ext_DisconnectMode RemoveMode, IntPtr custom)
         {
+            try { _events?.Disconnect(); } catch { }
+            _events = null;
             try { _overlays?.Stop(); } catch { }
             _overlays = null;
+            try { _ui?.Dispose(); } catch { }
+            _ui = null;
             _ribbon = null;
             _app = null;
             Log.Info("OnDisconnection.");
@@ -52,6 +66,7 @@ namespace LiveWebRegion
             try
             {
                 _overlays = new OverlayManager(_app);
+                _overlays.PreviewClosedByUser = OnPreviewClosedByUser;
                 _overlays.Start();
             }
             catch (Exception ex) { Log.Error("OverlayManager start failed", ex); }
@@ -91,77 +106,49 @@ namespace LiveWebRegion
 
         #region Ribbon callbacks (params taken as object; Office invokes via IDispatch)
 
-        public void OnRibbonLoad(object ribbon)
-        {
-            _ribbon = ribbon;
-        }
+        public void OnRibbonLoad(object ribbon) { _ribbon = ribbon; }
 
-        public void OnSetRegion(object control)
+        // "Fenster erstellen": always insert a new frame, then configure it.
+        public void OnCreateFrame(object control)
         {
             try
             {
-                bool inserted = false;
-                dynamic shape = ShapeRegions.GetSelectedShape(_app);
-                if (shape == null)
-                {
-                    // No shape selected: insert a rectangle for the user, then continue.
-                    shape = ShapeRegions.InsertRegionShape(_app);
-                    inserted = true;
-                    if (shape == null)
-                    {
-                        Native.Warn("Es konnte keine Form eingef&#252;gt werden. Bitte eine Form markieren und erneut versuchen.");
-                        return;
-                    }
-                }
+                dynamic shape = ShapeRegions.InsertRegionShape(_app);
+                if (shape == null) { Native.Warn("Es konnte kein Frame eingefügt werden. Ist eine Folie geöffnet?"); return; }
 
-                string path = ShapeRegions.PickLink();
-                if (string.IsNullOrEmpty(path))
-                {
-                    if (inserted) { try { shape.Delete(); } catch { } } // undo the auto-insert on cancel
-                    return;
-                }
+                LinkResult res = ShapeRegions.EditRegion(shape);
+                if (res == null) { try { shape.Delete(); } catch { } return; }
 
-                ShapeRegions.SetRegion(shape, path);
-                Log.Info("Region set on shape -> " + path);
+                ShapeRegions.SetRegion(shape, res);
+                Log.Info("Frame created -> " + res.Value + (res.Embed ? " (embedded)" : ""));
                 Invalidate();
             }
-            catch (Exception ex) { Log.Error("OnSetRegion failed", ex); Native.Warn("Fehler: " + ex.Message); }
+            catch (Exception ex) { Log.Error("OnCreateFrame failed", ex); Native.Warn("Fehler: " + ex.Message); }
         }
 
-        public void OnChangeFile(object control)
+        // "Optionen": configure the selected frame.
+        public void OnOptions(object control)
         {
             try
             {
                 dynamic shape = ShapeRegions.GetSelectedShape(_app);
-                if (!ShapeRegions.IsRegion(shape))
-                {
-                    Native.Warn("Die markierte Form ist kein Live-Web-Bereich.");
-                    return;
-                }
-                string current = ShapeRegions.GetPath(shape);
-                string path = ShapeRegions.PickLink(current);
-                if (string.IsNullOrEmpty(path)) return;
-                ShapeRegions.SetRegion(shape, path);
-                Log.Info("Region file changed -> " + path);
+                if (!ShapeRegions.IsRegion(shape)) { Native.Warn("Bitte zuerst einen Live Web Frame markieren."); return; }
+                EditRegionShape(shape);
             }
-            catch (Exception ex) { Log.Error("OnChangeFile failed", ex); Native.Warn("Fehler: " + ex.Message); }
+            catch (Exception ex) { Log.Error("OnOptions failed", ex); Native.Warn("Fehler: " + ex.Message); }
         }
 
-        public void OnRemoveRegion(object control)
+        public void OnRemoveFrame(object control)
         {
             try
             {
                 dynamic shape = ShapeRegions.GetSelectedShape(_app);
-                if (!ShapeRegions.IsRegion(shape))
-                {
-                    Native.Warn("Die markierte Form ist kein Live-Web-Bereich.");
-                    return;
-                }
+                if (!ShapeRegions.IsRegion(shape)) { Native.Warn("Die markierte Form ist kein Live Web Frame."); return; }
                 ShapeRegions.ClearRegion(shape);
-                Log.Info("Region removed.");
+                Log.Info("Frame removed.");
                 Invalidate();
             }
-            catch (Exception ex) { Log.Error("OnRemoveRegion failed", ex); Native.Warn("Fehler: " + ex.Message); }
+            catch (Exception ex) { Log.Error("OnRemoveFrame failed", ex); Native.Warn("Fehler: " + ex.Message); }
         }
 
         public void OnReload(object control)
@@ -170,10 +157,55 @@ namespace LiveWebRegion
             catch (Exception ex) { Log.Error("OnReload failed", ex); }
         }
 
+        public void OnTogglePreview(object control, bool pressed)
+        {
+            _previewEnabled = pressed;
+            try { _overlays?.SetPreview(pressed); } catch (Exception ex) { Log.Error("OnTogglePreview failed", ex); }
+        }
+        public bool OnGetPreviewPressed(object control) { return _previewEnabled; }
+
         public bool OnGetRegionSelected(object control)
         {
             try { return ShapeRegions.IsRegion(ShapeRegions.GetSelectedShape(_app)); }
             catch { return false; }
+        }
+
+        // Double-click on a frame opens the edit dialog (and cancels the default action).
+        // Deferred via BeginInvoke so the modal dialog runs outside the COM event callback.
+        private bool HandleDoubleClick(object selection)
+        {
+            try
+            {
+                dynamic sel = selection;
+                int t = (int)sel.Type;            // 2 = shapes, 3 = text (inside a shape)
+                if (t != 2 && t != 3) return false;
+
+                dynamic shape;
+                try { shape = sel.ShapeRange.Item(1); } catch { return false; }
+                if (!ShapeRegions.IsRegion(shape)) return false;
+
+                Log.Info("Double-click on frame (selType=" + t + "); opening editor.");
+                dynamic captured = shape;
+                _ui?.BeginInvoke((Action)(() => EditRegionShape(captured)));
+                return true; // handled (don't enter text-edit on the frame)
+            }
+            catch (Exception ex) { Log.Error("HandleDoubleClick failed", ex); return false; }
+        }
+
+        private void EditRegionShape(dynamic shape)
+        {
+            try
+            {
+                LinkResult res = ShapeRegions.EditRegion(shape);
+                if (res != null) { ShapeRegions.SetRegion(shape, res); Invalidate(); }
+            }
+            catch (Exception ex) { Log.Error("EditRegionShape failed", ex); Native.Warn("Fehler: " + ex.Message); }
+        }
+
+        private void OnPreviewClosedByUser()
+        {
+            _previewEnabled = false;
+            Invalidate(); // un-press the ribbon toggle
         }
 
         public void OnShowHelp(object control) { OpenAsset("help.html"); }
