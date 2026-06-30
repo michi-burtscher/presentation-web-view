@@ -3,14 +3,14 @@
   <ribbon>
     <tabs>
       <tab id="liveWebTab" label="Live Web">
-        <group id="liveWebRegionGroup" label="Web-Bereich">
+        <group id="liveWebRegionGroup" label="Web-Link">
           <button id="btnSetRegion"
-                  label="Bereich festlegen"
+                  label="Link setzen"
                   size="large"
                   imageMso="HyperlinkInsert"
                   onAction="OnSetRegion"
-                  screentip="Live-Web-Bereich festlegen"
-                  supertip="Ordnet der aktuell markierten Form eine HTML-Datei zu, die im Pr&#228;sentationsmodus live angezeigt wird." />
+                  screentip="Web-Link setzen"
+                  supertip="Weist der markierten Form eine HTML-Datei zu (oder f&#252;gt ein Rechteck ein), die im Pr&#228;sentationsmodus live angezeigt wird." />
           <button id="btnChangeFile"
                   label="Datei &#228;ndern"
                   size="large"
@@ -18,15 +18,15 @@
                   onAction="OnChangeFile"
                   getEnabled="OnGetRegionSelected"
                   screentip="HTML-Datei &#228;ndern"
-                  supertip="W&#228;hlt eine andere HTML-Datei f&#252;r den markierten Bereich." />
+                  supertip="W&#228;hlt eine andere HTML-Datei f&#252;r die markierte Form." />
           <button id="btnRemoveRegion"
-                  label="Bereich entfernen"
+                  label="Link entfernen"
                   size="large"
                   imageMso="Delete"
                   onAction="OnRemoveRegion"
                   getEnabled="OnGetRegionSelected"
-                  screentip="Web-Bereich entfernen"
-                  supertip="Entfernt die Web-Zuordnung von der markierten Form." />
+                  screentip="Web-Link entfernen"
+                  supertip="Entfernt die HTML-Zuordnung von der markierten Form." />
         </group>
         <group id="liveWebToolsGroup" label="Werkzeuge">
           <button id="btnReload"

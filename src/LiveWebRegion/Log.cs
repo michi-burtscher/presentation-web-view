@@ -35,21 +35,6 @@ namespace LiveWebRegion
             Write("ERROR", ex == null ? message : message + " :: " + ex);
         }
 
-        // Definitive "this callback ran" probe that cannot fail on path/permission
-        // issues the way file IO can. Written to HKCU.
-        public static void Beacon(string stage)
-        {
-            try
-            {
-                using (var key = Microsoft.Win32.Registry.CurrentUser
-                           .CreateSubKey(@"Software\LiveWebRegion\Diag"))
-                {
-                    key.SetValue(stage, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"));
-                }
-            }
-            catch { }
-        }
-
         private static void Write(string level, string message)
         {
             try

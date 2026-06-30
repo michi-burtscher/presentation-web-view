@@ -51,13 +51,9 @@ Write-Host "Starte PowerPoint (echt) mit blank.pptx ..." -ForegroundColor Cyan
 Start-Process -FilePath $exe -ArgumentList $blank
 Start-Sleep $WaitSeconds
 
-$d = Get-ItemProperty $diag -ErrorAction SilentlyContinue
-if ($d) {
-    Write-Host "BEACONS:" -ForegroundColor Green
-    $d.PSObject.Properties | Where-Object { $_.Name -notlike 'PS*' } | ForEach-Object { Write-Host ("  {0} = {1}" -f $_.Name, $_.Value) }
-} else {
-    Write-Host "KEINE Beacons - OnConnection feuerte nicht." -ForegroundColor Yellow
-}
+$loaded = (Test-Path $logLocal) -and (Select-String -Path $logLocal -Pattern "OnConnection" -Quiet)
+if ($loaded) { Write-Host "GELADEN: OnConnection im Log gefunden." -ForegroundColor Green }
+else { Write-Host "NICHT geladen: kein OnConnection im Log." -ForegroundColor Yellow }
 
 $pp = Get-Process POWERPNT -ErrorAction SilentlyContinue
 Write-Host ("PowerPoint laeuft noch: " + [bool]$pp)

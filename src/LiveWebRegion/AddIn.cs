@@ -27,7 +27,6 @@ namespace LiveWebRegion
 
         public void OnConnection(IntPtr Application, ext_ConnectMode ConnectMode, IntPtr AddInInst, IntPtr custom)
         {
-            Log.Beacon("OnConnection");
             try
             {
                 if (Application != IntPtr.Zero)
@@ -50,7 +49,6 @@ namespace LiveWebRegion
 
         public void OnStartupComplete(IntPtr custom)
         {
-            Log.Beacon("OnStartupComplete");
             try
             {
                 _overlays = new OverlayManager(_app);
@@ -76,7 +74,6 @@ namespace LiveWebRegion
 
         public string GetCustomUI(string RibbonID)
         {
-            Log.Beacon("GetCustomUI");
             try
             {
                 using (Stream s = Assembly.GetExecutingAssembly()
@@ -96,7 +93,6 @@ namespace LiveWebRegion
 
         public void OnRibbonLoad(object ribbon)
         {
-            Log.Beacon("OnRibbonLoad");
             _ribbon = ribbon;
         }
 
@@ -118,7 +114,7 @@ namespace LiveWebRegion
                     }
                 }
 
-                string path = ShapeRegions.PickHtmlFile(_app);
+                string path = ShapeRegions.PickLink();
                 if (string.IsNullOrEmpty(path))
                 {
                     if (inserted) { try { shape.Delete(); } catch { } } // undo the auto-insert on cancel
@@ -143,7 +139,7 @@ namespace LiveWebRegion
                     return;
                 }
                 string current = ShapeRegions.GetPath(shape);
-                string path = ShapeRegions.PickHtmlFile(_app, current);
+                string path = ShapeRegions.PickLink(current);
                 if (string.IsNullOrEmpty(path)) return;
                 ShapeRegions.SetRegion(shape, path);
                 Log.Info("Region file changed -> " + path);

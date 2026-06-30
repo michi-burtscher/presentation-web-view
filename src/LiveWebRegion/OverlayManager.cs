@@ -116,8 +116,10 @@ namespace LiveWebRegion
         // false on a transient state (no slide yet, no show window) to retry.
         private bool RebuildForSlide(dynamic view)
         {
-            if (!Native.TryGetSlideShowRect(out Rectangle winPx))
-                return false; // show window not up yet
+            var windows = Native.GetSlideShowWindows();
+            if (windows.Count == 0) return false; // show window not up yet
+            Native.ShowWindow show = PickAudience(windows);
+            Rectangle winPx = show.Rect;
 
             dynamic slide;
             try { slide = view.Slide; }
@@ -144,15 +146,21 @@ namespace LiveWebRegion
                     string path = "";
                     try { path = (string)sh.Tags.Item(ShapeRegions.TagName); } catch { }
                     if (string.IsNullOrEmpty(path)) continue;
-                    if (!File.Exists(path)) { Log.Error("Region file missing: " + path); continue; }
+                    if (!ShapeRegions.IsHttpUrl(path) && !File.Exists(path))
+                    { Log.Error("Region file missing: " + path); continue; }
 
                     int x = (int)Math.Round(offX + (float)sh.Left * s);
                     int y = (int)Math.Round(offY + (float)sh.Top * s);
                     int w = (int)Math.Round((float)sh.Width * s);
                     int h = (int)Math.Round((float)sh.Height * s);
                     var rect = new Rectangle(x, y, w, h);
+                    // Grow slightly so the overlay fully covers the shape's edit-mode
+                    // marker outline (dashed border straddles the edge).
+                    rect.Inflate((int)Math.Ceiling(s) + 1, (int)Math.Ceiling(s) + 1);
 
-                    var form = new WebOverlayForm(_env);
+                    // Own the overlay to the show window so Windows destroys it the
+                    // instant PowerPoint closes the show (Esc), without waiting for poll.
+                    var form = new WebOverlayForm(_env, show.Hwnd);
                     form.NavRequested += SlideShow;
                     form.ShowAt(rect, path);
                     _overlays.Add(form);
@@ -161,6 +169,25 @@ namespace LiveWebRegion
                 return true;
             }
             catch (Exception ex) { Log.Error("RebuildForSlide failed", ex); return true; }
+        }
+
+        // With presenter view there are two "screenClass" windows (presenter + audience).
+        // Use the real SlideShowWindow's position (in points) to pick the audience one:
+        // a positive Left/Top means it sits on a secondary monitor (further right/down).
+        private Native.ShowWindow PickAudience(System.Collections.Generic.List<Native.ShowWindow> windows)
+        {
+            if (windows.Count == 1) return windows[0];
+
+            bool secondary = false;
+            try
+            {
+                dynamic ssw = _app.SlideShowWindows.Item(1);
+                secondary = (float)ssw.Left > 1f || (float)ssw.Top > 1f;
+            }
+            catch { }
+
+            windows.Sort((a, b) => (a.Rect.Left + a.Rect.Top).CompareTo(b.Rect.Left + b.Rect.Top));
+            return secondary ? windows[windows.Count - 1] : windows[0];
         }
 
         private void EndShow()

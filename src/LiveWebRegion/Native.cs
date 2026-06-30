@@ -55,16 +55,20 @@ namespace LiveWebRegion
         // The PowerPoint slide-show full-screen window has class name "screenClass".
         private const string SlideShowClass = "screenClass";
 
-        /// <summary>
-        /// Screen rectangle (physical pixels) of this process's slide-show windows.
-        /// Presenter view yields two; the largest one is the audience display.
-        /// </summary>
-        public static bool TryGetSlideShowRect(out Rectangle rect)
+        public struct ShowWindow
         {
-            rect = Rectangle.Empty;
+            public IntPtr Hwnd;
+            public Rectangle Rect;
+        }
+
+        /// <summary>
+        /// Slide-show windows (handle + physical-pixel rect) of this process.
+        /// Presenter view produces two; the caller picks the audience one.
+        /// </summary>
+        public static System.Collections.Generic.List<ShowWindow> GetSlideShowWindows()
+        {
+            var list = new System.Collections.Generic.List<ShowWindow>();
             uint myPid = (uint)Process.GetCurrentProcess().Id;
-            Rectangle best = Rectangle.Empty;
-            long bestArea = -1;
 
             EnumWindows((h, l) =>
             {
@@ -77,16 +81,11 @@ namespace LiveWebRegion
                 if (sb.ToString() != SlideShowClass) return true;
 
                 if (GetWindowRect(h, out RECT r))
-                {
-                    var cand = Rectangle.FromLTRB(r.Left, r.Top, r.Right, r.Bottom);
-                    long area = (long)cand.Width * cand.Height;
-                    if (area > bestArea) { bestArea = area; best = cand; }
-                }
+                    list.Add(new ShowWindow { Hwnd = h, Rect = Rectangle.FromLTRB(r.Left, r.Top, r.Right, r.Bottom) });
                 return true;
             }, IntPtr.Zero);
 
-            if (bestArea > 0) { rect = best; return true; }
-            return false;
+            return list;
         }
 
         #endregion

@@ -12,8 +12,6 @@ namespace LiveWebRegion
         public const string TagName = "LiveWebPath";
 
         private const int ppSelectionShapes = 2;
-        private const int msoFileDialogFilePicker = 3;
-        private const int msoTrue = -1;
 
         /// <summary>Returns the first selected shape, or null if none is selected.</summary>
         public static dynamic GetSelectedShape(dynamic app)
@@ -64,27 +62,37 @@ namespace LiveWebRegion
             return shape != null && !string.IsNullOrEmpty(GetPath(shape));
         }
 
-        /// <summary>Office file picker for an HTML file. Returns null on cancel.</summary>
-        public static string PickHtmlFile(dynamic app, string initialPath = null)
+        public static bool IsHttpUrl(string v)
+        {
+            return v != null &&
+                   (v.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                    v.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>Prompts for a URL or local HTML file. Returns null on cancel.</summary>
+        public static string PickLink(string initial = null)
         {
             try
             {
-                dynamic fd = app.FileDialog(msoFileDialogFilePicker);
-                fd.Title = "HTML-Datei für den Live-Web-Bereich wählen";
-                fd.AllowMultiSelect = false;
-                dynamic filters = fd.Filters;
-                filters.Clear();
-                filters.Add("Webdateien", "*.html;*.htm", 1);
-                filters.Add("Alle Dateien", "*.*", 2);
-                if (!string.IsNullOrEmpty(initialPath))
+                using (var dlg = new LinkInputDialog(initial))
                 {
-                    try { fd.InitialFileName = initialPath; } catch { }
+                    if (dlg.ShowDialog() != System.Windows.Forms.DialogResult.OK) return null;
+                    string v = dlg.Value;
+                    if (string.IsNullOrWhiteSpace(v)) return null;
+                    return Normalize(v);
                 }
-                if ((int)fd.Show() == msoTrue)
-                    return (string)fd.SelectedItems.Item(1);
             }
-            catch (Exception ex) { Log.Error("PickHtmlFile failed", ex); }
-            return null;
+            catch (Exception ex) { Log.Error("PickLink failed", ex); return null; }
+        }
+
+        // Accept "example.com/foo" by assuming https; leave files and full URLs as-is.
+        private static string Normalize(string v)
+        {
+            if (IsHttpUrl(v)) return v;
+            if (File.Exists(v)) return v;
+            if (v.Contains(".") && !v.Contains("\\") && !v.Contains(":"))
+                return "https://" + v;
+            return v;
         }
 
         /// <summary>Stores the path on the shape and marks it visually in edit mode.</summary>
@@ -105,11 +113,11 @@ namespace LiveWebRegion
         // Light fill + dashed border + label so web regions are recognisable while editing.
         private static void ApplyMarker(dynamic shape, string path)
         {
-            string file = path;
-            try { file = Path.GetFileName(path); } catch { }
+            string label = path;
+            try { label = IsHttpUrl(path) ? new Uri(path).Host : Path.GetFileName(path); } catch { }
             try
             {
-                shape.TextFrame.TextRange.Text = "▶ Live Web\n" + file;
+                shape.TextFrame.TextRange.Text = "▶ Live Web\n" + label;
             }
             catch { }
             try

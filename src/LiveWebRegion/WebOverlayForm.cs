@@ -15,6 +15,7 @@ namespace LiveWebRegion
     {
         private readonly WebView2 _web;
         private readonly CoreWebView2Environment _env;
+        private readonly IntPtr _ownerHwnd;
         private string _currentUrl;
         private string _pendingUrl;
 
@@ -26,9 +27,10 @@ namespace LiveWebRegion
         private const uint VK_BACK = 0x08, VK_ESCAPE = 0x1B, VK_PRIOR = 0x21, VK_NEXT = 0x22;
         private const uint VK_LEFT = 0x25, VK_UP = 0x26, VK_RIGHT = 0x27, VK_DOWN = 0x28;
 
-        public WebOverlayForm(CoreWebView2Environment env)
+        public WebOverlayForm(CoreWebView2Environment env, IntPtr ownerHwnd)
         {
             _env = env;
+            _ownerHwnd = ownerHwnd;
             FormBorderStyle = FormBorderStyle.None;
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.Manual;
@@ -111,6 +113,9 @@ namespace LiveWebRegion
             {
                 CreateParams cp = base.CreateParams;
                 cp.ExStyle |= WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW;
+                // Owner (not child): a top-level window owned by the show window, so it
+                // is destroyed automatically when the show window closes.
+                if (_ownerHwnd != IntPtr.Zero) cp.Parent = _ownerHwnd;
                 return cp;
             }
         }
