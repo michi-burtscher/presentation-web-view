@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="OnRibbonLoad">
+  <ribbon>
+    <tabs>
+      <tab id="liveWebTab" label="Live Web">
+        <group id="liveWebRegionGroup" label="Web-Bereich">
+          <button id="btnSetRegion"
+                  label="Bereich festlegen"
+                  size="large"
+                  imageMso="HyperlinkInsert"
+                  onAction="OnSetRegion"
+                  screentip="Live-Web-Bereich festlegen"
+                  supertip="Ordnet der aktuell markierten Form eine HTML-Datei zu, die im Pr&#228;sentationsmodus live angezeigt wird." />
+          <button id="btnChangeFile"
+                  label="Datei &#228;ndern"
+                  size="large"
+                  imageMso="FileOpen"
+                  onAction="OnChangeFile"
+                  getEnabled="OnGetRegionSelected"
+                  screentip="HTML-Datei &#228;ndern"
+                  supertip="W&#228;hlt eine andere HTML-Datei f&#252;r den markierten Bereich." />
+          <button id="btnRemoveRegion"
+                  label="Bereich entfernen"
+                  size="large"
+                  imageMso="Delete"
+                  onAction="OnRemoveRegion"
+                  getEnabled="OnGetRegionSelected"
+                  screentip="Web-Bereich entfernen"
+                  supertip="Entfernt die Web-Zuordnung von der markierten Form." />
+        </group>
+        <group id="liveWebToolsGroup" label="Werkzeuge">
+          <button id="btnReload"
+                  label="Neu laden"
+                  size="large"
+                  imageMso="Refresh"
+                  onAction="OnReload"
+                  screentip="Neu laden"
+                  supertip="L&#228;dt die Web-Inhalte der aktuellen Folie neu." />
+        </group>
+        <group id="liveWebHelpGroup" label="Hilfe">
+          <button id="btnHelp"
+                  label="Anleitung"
+                  size="large"
+                  imageMso="Help"
+                  onAction="OnShowHelp"
+                  screentip="Anleitung &#246;ffnen"
+                  supertip="Zeigt eine Kurzanleitung zur Verwendung des Add-ins." />
+          <button id="btnAbout"
+                  label="Info"
+                  size="large"
+                  imageMso="Info"
+                  onAction="OnShowAbout"
+                  screentip="&#220;ber dieses Add-in"
+                  supertip="Copyright, Version und Lizenzinformationen." />
+        </group>
+      </tab>
+    </tabs>
+  </ribbon>
+</customUI>

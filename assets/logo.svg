@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Live Web Region">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1e3a8a"/>
+      <stop offset="1" stop-color="#0ea5e9"/>
+    </linearGradient>
+  </defs>
+  <rect x="3" y="3" width="58" height="58" rx="14" fill="url(#bg)"/>
+  <!-- globe -->
+  <g stroke="#ffffff" stroke-width="2.2" fill="none" opacity="0.92">
+    <circle cx="27" cy="29" r="15"/>
+    <ellipse cx="27" cy="29" rx="6.5" ry="15"/>
+    <line x1="12" y1="29" x2="42" y2="29"/>
+    <line x1="15" y1="20" x2="39" y2="20"/>
+    <line x1="15" y1="38" x2="39" y2="38"/>
+  </g>
+  <!-- live/play badge -->
+  <circle cx="45" cy="46" r="11" fill="#ffffff"/>
+  <path d="M41 40.5 L52 46 L41 51.5 Z" fill="#0ea5e9"/>
+</svg>

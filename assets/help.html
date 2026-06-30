@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Live Web Region – Anleitung</title>
+<style>
+  :root { --blue:#1e3a8a; --cyan:#0ea5e9; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:"Segoe UI",system-ui,sans-serif; color:#1f2937; background:#f8fafc; }
+  header { background:linear-gradient(135deg,var(--blue),var(--cyan)); color:#fff; padding:28px 32px; display:flex; align-items:center; gap:18px; }
+  header svg { width:56px; height:56px; flex:0 0 auto; }
+  header h1 { margin:0; font-size:26px; }
+  header p { margin:4px 0 0; opacity:.9; }
+  main { max-width:820px; margin:0 auto; padding:28px 32px 60px; }
+  h2 { color:var(--blue); margin-top:34px; }
+  ol { line-height:1.7; } li { margin-bottom:8px; }
+  .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:18px 22px; margin:16px 0; }
+  kbd { background:#111827; color:#fff; border-radius:6px; padding:2px 8px; font-size:13px; }
+  .tip { border-left:4px solid var(--cyan); background:#ecfeff; padding:12px 16px; border-radius:8px; }
+  footer { text-align:center; color:#6b7280; font-size:13px; padding:24px; }
+</style>
+</head>
+<body>
+<header>
+  <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e3a8a"/><stop offset="1" stop-color="#0ea5e9"/></linearGradient></defs>
+    <rect x="3" y="3" width="58" height="58" rx="14" fill="url(#bg)"/>
+    <g stroke="#fff" stroke-width="2.2" fill="none" opacity=".92"><circle cx="27" cy="29" r="15"/><ellipse cx="27" cy="29" rx="6.5" ry="15"/><line x1="12" y1="29" x2="42" y2="29"/><line x1="15" y1="20" x2="39" y2="20"/><line x1="15" y1="38" x2="39" y2="38"/></g>
+    <circle cx="45" cy="46" r="11" fill="#fff"/><path d="M41 40.5 L52 46 L41 51.5 Z" fill="#0ea5e9"/>
+  </svg>
+  <div>
+    <h1>Live Web Region</h1>
+    <p>HTML/JS-Seiten live in PowerPoint anzeigen – auch im Präsentationsmodus.</p>
+  </div>
+</header>
+<main>
+  <h2>In 3 Schritten</h2>
+  <div class="card">
+    <ol>
+      <li><b>Bereich festlegen:</b> Reiter <b>Live Web → Bereich festlegen</b>.
+        Ist eine Form markiert, wird sie verwendet. Ist nichts markiert, wird automatisch
+        ein Rechteck eingefügt. Anschließend die gewünschte <b>HTML-Datei</b> wählen.</li>
+      <li><b>Position/Größe</b> der markierten Form nach Wunsch anpassen – der Web-Bereich
+        folgt der Form.</li>
+      <li><b>Präsentation starten</b> (<kbd>F5</kbd>): Im Bereich läuft die Seite live und interaktiv.</li>
+    </ol>
+  </div>
+
+  <h2>Im Präsentationsmodus</h2>
+  <div class="card">
+    <ul style="line-height:1.7">
+      <li><b>Interaktion:</b> Mausklicks, Tippen, Buttons funktionieren direkt auf der Seite.</li>
+      <li><b>Weiterblättern / Beenden:</b> <kbd>→</kbd> <kbd>←</kbd> <kbd>Bild ↑/↓</kbd> und
+        <kbd>Esc</kbd> steuern die Präsentation – auch dann, wenn die Seite gerade den Fokus hat.</li>
+    </ul>
+    <p class="tip">Tipp: Mehrere Bereiche pro Folie sind möglich. Jeder Bereich kann eine
+      eigene HTML-Datei zeigen.</p>
+  </div>
+
+  <h2>Verwalten</h2>
+  <div class="card">
+    <ul style="line-height:1.7">
+      <li><b>Datei ändern:</b> markierten Web-Bereich auf eine andere HTML-Datei umstellen.</li>
+      <li><b>Bereich entfernen:</b> Web-Zuordnung der markierten Form löschen.</li>
+      <li><b>Neu laden:</b> Web-Inhalte der aktuellen Folie neu laden.</li>
+    </ul>
+  </div>
+
+  <h2>Voraussetzungen</h2>
+  <div class="card">
+    Windows · PowerPoint Desktop (64-Bit) · Microsoft Edge <b>WebView2 Runtime</b>
+    (auf aktuellen Windows-Systemen meist vorinstalliert).
+  </div>
+</main>
+<footer>© 2026 Michael Burtscher · Live Web Region</footer>
+</body>
+</html>

@@ -1,0 +1,40 @@
+Live Web Region for PowerPoint
+End User License Agreement (EULA)
+
+Copyright (c) 2026 Michael Burtscher. All rights reserved.
+
+1. Grant of License
+   The author grants you a personal, non-exclusive, non-transferable license to
+   install and use this software ("the Software") on devices you own or control,
+   for personal use and evaluation.
+
+2. Restrictions
+   You may NOT, without prior written permission of the author:
+     a) distribute, publish, sublicense, sell, rent, lease, or lend the Software;
+     b) modify, adapt, translate, or create derivative works of the Software;
+     c) decompile, disassemble, or otherwise reverse-engineer the Software,
+        except to the extent such restriction is prohibited by applicable law;
+     d) remove or alter any copyright, trademark, or other proprietary notices.
+
+3. Ownership
+   The Software is licensed, not sold. The author retains all right, title, and
+   interest in and to the Software, including all intellectual property rights.
+
+4. No Warranty
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+
+5. Limitation of Liability
+   IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM,
+   OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+
+6. Reservation of Rights
+   All rights not expressly granted herein are reserved by the author. The author
+   may offer separate commercial license terms; contact the author for details.
+
+7. Third-Party Components
+   This software uses the Microsoft Edge WebView2 SDK, subject to its own license
+   terms from Microsoft.

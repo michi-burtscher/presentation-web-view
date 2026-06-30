@@ -1,0 +1,19 @@
+# Build output
+**/bin/
+**/obj/
+dist/
+
+# Generated interop (re-created via scripts/generate-interop.ps1)
+libs/
+
+# Generated test presentations (the source demo.html is kept)
+samples/*.pptx
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+*.user
+*.suo
+
+# Logs / diagnostics
+*.binlog
