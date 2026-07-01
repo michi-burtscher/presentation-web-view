@@ -41,7 +41,7 @@
           <button id="btnUpdate"
                   label="Update"
                   size="large"
-                  imageMso="SynchronizeList"
+                  imageMso="Refresh"
                   onAction="OnCheckUpdate"
                   screentip="Nach Updates suchen"
                   supertip="Pr&#252;ft online, ob eine neue Version verf&#252;gbar ist, und installiert sie." />
