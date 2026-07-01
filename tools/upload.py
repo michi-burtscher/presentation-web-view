@@ -110,7 +110,21 @@ class App:
             b.grid(row=i // 2, column=i % 2, padx=4, pady=4, sticky="we")
         self._step_buttons = steps.winfo_children()
 
-        self.log = scrolledtext.ScrolledText(root, height=22)
+        rel = tk.LabelFrame(root, text="Vorhandene Releases (aufräumen)")
+        rel.pack(fill="x", padx=10, pady=(0, 6))
+        self.releases = tk.Listbox(rel, height=5)
+        self.releases.pack(side="left", fill="both", expand=True, padx=(6, 4), pady=6)
+        rbtns = tk.Frame(rel)
+        rbtns.pack(side="right", padx=6, pady=6)
+        self.btn_list = tk.Button(rbtns, text="Auflisten", width=20,
+                                  command=lambda: self.run_async(self.list_releases))
+        self.btn_list.pack(pady=2)
+        self.btn_del = tk.Button(rbtns, text="Ausgewähltes löschen", width=20, command=self.on_delete_clicked)
+        self.btn_del.pack(pady=2)
+        self._release_tags: list[str] = []
+        self._step_buttons = list(self._step_buttons) + [self.btn_list, self.btn_del]
+
+        self.log = scrolledtext.ScrolledText(root, height=18)
         self.log.pack(fill="both", expand=True, padx=10, pady=(4, 10))
         self.busy = False
 
@@ -220,6 +234,48 @@ class App:
         self.write_sha()
         self.release()
         self.commit_push()
+
+    # ---- release cleanup ----
+    def list_releases(self):
+        out = self.run([GH, "release", "list", "--json", "tagName,name,publishedAt", "--limit", "100"])
+        try:
+            data = json.loads(out) if out.strip().startswith("[") else []
+        except Exception:
+            data = []
+        tags = [str(r.get("tagName", "")) for r in data]
+        rows = [f'{r.get("tagName","")}    {r.get("name","")}    {(r.get("publishedAt","") or "")[:10]}' for r in data]
+
+        def fill():
+            self._release_tags = tags
+            self.releases.delete(0, "end")
+            for row in rows:
+                self.releases.insert("end", row)
+            if not rows:
+                self.releases.insert("end", "(keine Releases)")
+
+        self.root.after(0, fill)
+
+    def on_delete_clicked(self):
+        if self.busy:
+            return
+        sel = self.releases.curselection()
+        if not sel or sel[0] >= len(self._release_tags):
+            messagebox.showinfo("Releases", "Bitte zuerst „Auflisten“ und dann ein Release auswählen.")
+            return
+        tag = self._release_tags[sel[0]]
+        if not tag:
+            return
+        if not messagebox.askyesno(
+            "Release löschen",
+            f"Release „{tag}“ inklusive Tag und aller Assets löschen?\n\nDas kann nicht rückgängig gemacht werden.",
+        ):
+            return
+        self.run_async(lambda: self._delete_tag(tag))
+
+    def _delete_tag(self, tag: str):
+        self.run([GH, "release", "delete", tag, "--yes", "--cleanup-tag"])
+        self.out(f"Release {tag} gelöscht.")
+        self.list_releases()
 
 
 def main():
