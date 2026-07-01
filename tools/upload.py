@@ -18,11 +18,29 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import shutil
 import subprocess
 import threading
 import tkinter as tk
 from pathlib import Path
 from tkinter import scrolledtext, messagebox
+
+
+def find_gh() -> str:
+    """Locate the GitHub CLI even if it is not yet on this session's PATH."""
+    found = shutil.which("gh")
+    if found:
+        return found
+    for candidate in (
+        r"C:\Program Files\GitHub CLI\gh.exe",
+        r"C:\Program Files (x86)\GitHub CLI\gh.exe",
+    ):
+        if Path(candidate).exists():
+            return candidate
+    return "gh"  # fall back; will error clearly if missing
+
+
+GH = find_gh()
 
 ROOT = Path(__file__).resolve().parents[1]
 OWNER = "michi-burtscher"
@@ -182,10 +200,10 @@ class App:
         notes = "\n".join("- " + n for n in self.notes_list())
         asset = f"{SETUP_EXE}#LiveWebRegionSetup.exe"
         try:
-            self.run(["gh", "release", "create", version, asset, "--title", f"Live Web Region {version}", "--notes", notes])
+            self.run([GH, "release", "create", version, asset, "--title", f"Live Web Region {version}", "--notes", notes])
         except RuntimeError:
             self.out("Release existiert evtl. schon – lade Asset mit --clobber hoch.")
-            self.run(["gh", "release", "upload", version, asset, "--clobber"])
+            self.run([GH, "release", "upload", version, asset, "--clobber"])
 
     def commit_push(self):
         version = self.v()
