@@ -20,3 +20,10 @@ samples/*.pptx
 
 # Logs / diagnostics
 *.binlog
+
+# helper
+handshake.md
+
+# Local maintainer secrets (never commit tokens)
+tools/local/
+*token*.json
