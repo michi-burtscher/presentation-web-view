@@ -21,8 +21,9 @@ samples/*.pptx
 # Logs / diagnostics
 *.binlog
 
-# helper
+# helper / local planning notes (not part of the shipped project)
 handshake.md
+PLAN.md
 
 # Local maintainer secrets (never commit tokens)
 tools/local/
