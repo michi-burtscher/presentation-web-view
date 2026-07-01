@@ -87,15 +87,38 @@ namespace LiveWebRegion
 
         #region set / clear
 
+        private const int MaxEmbedBytes = 2 * 1024 * 1024; // safe shape-tag budget
+
         public static void SetRegion(dynamic shape, LinkResult r)
         {
             string value = r.Value ?? "";
+            bool wasEmbedded = IsEmbedded(shape);
+            string prevPath = GetPath(shape);
 
-            if (r.Embed && !IsHttpUrl(value) && File.Exists(value))
+            if (IsHttpUrl(value))
+            {
+                try { shape.Tags.Delete(TagData); } catch { }
+                shape.Tags.Add(TagName, value);
+            }
+            else if (r.Embed && File.Exists(value))
             {
                 byte[] bytes = File.ReadAllBytes(value);
-                shape.Tags.Add(TagData, Convert.ToBase64String(bytes));
-                shape.Tags.Add(TagName, Path.GetFileName(value)); // display name only
+                if (bytes.Length > MaxEmbedBytes)
+                {
+                    Native.Warn("Die Datei ist zu groß zum Einbetten (max. 2 MB). Es wird der Pfad gespeichert.");
+                    try { shape.Tags.Delete(TagData); } catch { }
+                    shape.Tags.Add(TagName, StoreValue(shape, value));
+                }
+                else
+                {
+                    shape.Tags.Add(TagData, Convert.ToBase64String(bytes));
+                    shape.Tags.Add(TagName, StoreValue(shape, value)); // keep path for re-edit
+                }
+            }
+            else if (r.Embed && wasEmbedded && SameLocalPath(shape, value, prevPath))
+            {
+                // File no longer available but the embedded bytes are already stored: keep them.
+                shape.Tags.Add(TagName, prevPath);
             }
             else
             {
@@ -105,7 +128,13 @@ namespace LiveWebRegion
 
             shape.Tags.Add(TagOpts, r.Options.ToString());
             try { shape.AlternativeText = "LiveWebRegion: " + value; } catch { }
-            ApplyMarker(shape, value, r.Embed);
+            ApplyMarker(shape, value, IsEmbedded(shape));
+        }
+
+        private static bool SameLocalPath(dynamic shape, string a, string b)
+        {
+            try { return string.Equals(ResolveToAbsolute(shape, a), ResolveToAbsolute(shape, b), StringComparison.OrdinalIgnoreCase); }
+            catch { return string.Equals(a, b, StringComparison.OrdinalIgnoreCase); }
         }
 
         public static void ClearRegion(dynamic shape)
@@ -166,19 +195,32 @@ namespace LiveWebRegion
             if (string.IsNullOrEmpty(value)) return null;
             if (IsHttpUrl(value)) return value;
 
-            string path = value;
-            if (!Path.IsPathRooted(path))
-            {
-                try
-                {
-                    string presFolder = (string)shape.Parent.Parent.Path;
-                    if (!string.IsNullOrEmpty(presFolder))
-                        path = Path.GetFullPath(Path.Combine(presFolder, value));
-                }
-                catch { }
-            }
+            string path = ResolveToAbsolute(shape, value);
             if (!File.Exists(path)) return null;
             return new Uri(path).AbsoluteUri;
+        }
+
+        // Resolve a stored (possibly relative) local path against the presentation folder.
+        private static string ResolveToAbsolute(dynamic shape, string path)
+        {
+            if (string.IsNullOrEmpty(path) || Path.IsPathRooted(path)) return path;
+            try
+            {
+                string presFolder = (string)shape.Parent.Parent.Path;
+                if (!string.IsNullOrEmpty(presFolder))
+                    return Path.GetFullPath(Path.Combine(presFolder, path));
+            }
+            catch { }
+            return path;
+        }
+
+        // Value to pre-fill the dialog with: absolute path for local files (so a round-trip
+        // through Normalize/StoreValue is lossless), or the URL as-is.
+        private static string ResolveForEditing(dynamic shape)
+        {
+            string v = GetPath(shape);
+            if (string.IsNullOrEmpty(v) || IsHttpUrl(v)) return v;
+            return ResolveToAbsolute(shape, v);
         }
 
         private static string WriteEmbedTemp(byte[] bytes)
@@ -253,7 +295,7 @@ namespace LiveWebRegion
             RegionOptions opts = new RegionOptions();
             if (shape != null && IsRegion(shape))
             {
-                initial = GetPath(shape);
+                initial = ResolveForEditing(shape);
                 embed = IsEmbedded(shape);
                 opts = GetOptions(shape);
             }
@@ -266,12 +308,15 @@ namespace LiveWebRegion
             }
         }
 
-        // Accept "example.com/foo" by assuming https; leave files and full URLs as-is.
+        // Accept "example.com/foo" by assuming https; leave file paths and full URLs as-is.
         private static string Normalize(string v)
         {
             if (IsHttpUrl(v)) return v;
             if (File.Exists(v)) return v;
-            if (v.Contains(".") && !v.Contains("\\") && !v.Contains(":")) return "https://" + v;
+            bool looksLikeFile = v.Contains("\\") || v.Contains(":") ||
+                                 v.EndsWith(".htm", StringComparison.OrdinalIgnoreCase) ||
+                                 v.EndsWith(".html", StringComparison.OrdinalIgnoreCase);
+            if (!looksLikeFile && v.Contains(".")) return "https://" + v;
             return v;
         }
 

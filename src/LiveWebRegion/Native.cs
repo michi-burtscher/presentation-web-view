@@ -68,7 +68,8 @@ namespace LiveWebRegion
         public static System.Collections.Generic.List<ShowWindow> GetSlideShowWindows()
         {
             var list = new System.Collections.Generic.List<ShowWindow>();
-            uint myPid = (uint)Process.GetCurrentProcess().Id;
+            uint myPid;
+            using (var self = Process.GetCurrentProcess()) myPid = (uint)self.Id;
 
             EnumWindows((h, l) =>
             {

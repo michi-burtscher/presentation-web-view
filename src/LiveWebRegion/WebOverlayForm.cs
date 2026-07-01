@@ -47,7 +47,7 @@ namespace LiveWebRegion
                 if (e.IsSuccess)
                 {
                     ApplyOptions();
-                    if (_opts.Interactive) HookAcceleratorKeys();
+                    HookAcceleratorKeys(); // keep slideshow navigation working even if the page gets focus
                     if (_pendingUrl != null) NavigateNow(_pendingUrl);
                 }
                 else Log.Error("Overlay WebView2 init failed", e.InitializationException);
@@ -58,7 +58,6 @@ namespace LiveWebRegion
 
         private const int WS_EX_NOACTIVATE = 0x08000000;
         private const int WS_EX_TOOLWINDOW = 0x00000080;
-        private const int WS_EX_TRANSPARENT = 0x00000020;
 
         protected override CreateParams CreateParams
         {
@@ -66,8 +65,6 @@ namespace LiveWebRegion
             {
                 CreateParams cp = base.CreateParams;
                 cp.ExStyle |= WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW;
-                // Non-interactive: let mouse fall through to the slide show.
-                if (_opts != null && !_opts.Interactive) cp.ExStyle |= WS_EX_TRANSPARENT;
                 if (_ownerHwnd != IntPtr.Zero) cp.Parent = _ownerHwnd;
                 return cp;
             }
@@ -108,14 +105,33 @@ namespace LiveWebRegion
 
         private void OnNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
         {
-            if (e.IsSuccess || _showingError) return;
-            _showingError = true;
-            try { _web.CoreWebView2.NavigateToString(ErrorPage(_currentUrl)); } catch { }
+            if (!e.IsSuccess)
+            {
+                if (_showingError) return;
+                _showingError = true;
+                try { _web.CoreWebView2.NavigateToString(ErrorPage(_currentUrl)); } catch { }
+                return;
+            }
+
+            // Non-interactive: page still renders/animates but ignores mouse input.
+            if (!_opts.Interactive)
+            {
+                try { _web.CoreWebView2.ExecuteScriptAsync("document.documentElement.style.pointerEvents='none';"); } catch { }
+            }
         }
 
         public void Reload()
         {
             try { _web.CoreWebView2?.Reload(); } catch { }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                try { _reloadTimer?.Stop(); _reloadTimer?.Dispose(); } catch { }
+            }
+            base.Dispose(disposing);
         }
 
         private static string ErrorPage(string url)
