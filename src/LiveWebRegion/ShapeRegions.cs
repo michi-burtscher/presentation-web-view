@@ -89,6 +89,10 @@ namespace LiveWebRegion
 
         private const int MaxEmbedBytes = 2 * 1024 * 1024; // safe shape-tag budget
 
+        // One-click installer download (always the latest published release asset).
+        private const string DownloadUrl =
+            "https://github.com/michi-burtscher/presentation-web-view/releases/latest/download/LiveWebRegionSetup.exe";
+
         public static void SetRegion(dynamic shape, LinkResult r)
         {
             string value = r.Value ?? "";
@@ -145,6 +149,7 @@ namespace LiveWebRegion
             }
             try { shape.AlternativeText = ""; } catch { }
             try { shape.TextFrame.TextRange.Text = ""; } catch { }
+            try { shape.ActionSettings.Item(1).Hyperlink.Delete(); } catch { }
         }
 
         // Prefer a path relative to the presentation so the deck stays portable when
@@ -258,13 +263,20 @@ namespace LiveWebRegion
             {
                 dynamic tr = shape.TextFrame.TextRange;
                 tr.Text = "🌐  Live Web\n" + label +
-                          "\nLive-Ansicht mit dem Add-in „Live Web Region“\ngithub.com/michi-burtscher/presentation-web-view";
+                          "\nBenötigt das Add-in „Live Web Region“ für die Live-Ansicht." +
+                          "\nDownload: github.com/michi-burtscher/presentation-web-view/releases" +
+                          "\n(im Präsentationsmodus genügt ein Klick auf dieses Feld)";
                 try { tr.ParagraphFormat.Alignment = 2; } catch { } // ppAlignCenter
                 try { tr.Font.Color.RGB = Rgb(30, 58, 138); } catch { }
                 try { dynamic p1 = tr.Paragraphs(1, 1); p1.Font.Bold = -1; p1.Font.Size = 18; } catch { }
-                try { dynamic p3 = tr.Paragraphs(3, 2); p3.Font.Size = 10; p3.Font.Color.RGB = Rgb(120, 130, 150); } catch { }
+                try { dynamic p3 = tr.Paragraphs(3, 3); p3.Font.Size = 10; p3.Font.Color.RGB = Rgb(120, 130, 150); } catch { }
+                try { dynamic pUrl = tr.Paragraphs(4, 1); pUrl.Font.Bold = -1; pUrl.Font.Color.RGB = Rgb(80, 140, 220); } catch { }
             }
             catch { }
+
+            // Clickable in slideshow for recipients without the add-in: opens the
+            // installer download. (With the add-in, the WebView2 overlay covers it.)
+            try { shape.ActionSettings.Item(1).Hyperlink.Address = DownloadUrl; } catch { }
 
             try
             {

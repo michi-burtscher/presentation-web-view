@@ -4,6 +4,12 @@
   <p><b>Zeigt eine lokale HTML/JS/CSS-Datei live in einem Folienbereich an – interaktiv, auch im Präsentationsmodus.</b></p>
 </div>
 
+### ⬇️ Download / Installation (ein Klick)
+
+**[➡️ Installer herunterladen (LiveWebRegionSetup.exe)](https://github.com/michi-burtscher/presentation-web-view/releases/latest/download/LiveWebRegionSetup.exe)**
+— danach doppelklicken, fertig (pro Benutzer, ohne Adminrechte).
+Alle Versionen: **[Releases](https://github.com/michi-burtscher/presentation-web-view/releases/latest)**.
+
 ---
 
 ## Was es macht
