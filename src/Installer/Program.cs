@@ -28,8 +28,35 @@ namespace LiveWebRegionSetup
         private static int Main(string[] args)
         {
             bool uninstall = Array.Exists(args, a => a.Equals("/uninstall", StringComparison.OrdinalIgnoreCase));
+            bool update = Array.Exists(args, a => a.Equals("/update", StringComparison.OrdinalIgnoreCase));
             try
             {
+                if (update)
+                {
+                    // Launched by the add-in's Update button: wait for PowerPoint to close,
+                    // install, then relaunch PowerPoint.
+                    for (int i = 0; i < 90 && IsPowerPointRunning(); i++) System.Threading.Thread.Sleep(1000);
+                    if (IsPowerPointRunning())
+                    {
+                        MessageBox.Show("PowerPoint läuft noch. Bitte schließen – das Update wird anschließend installiert.",
+                            AppName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        for (int i = 0; i < 180 && IsPowerPointRunning(); i++) System.Threading.Thread.Sleep(1000);
+                    }
+                    if (IsPowerPointRunning())
+                    {
+                        MessageBox.Show("PowerPoint konnte nicht geschlossen werden. Update abgebrochen.",
+                            AppName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return 1;
+                    }
+                    System.Threading.Thread.Sleep(1500); // let file locks release
+                    ExtractPayload();
+                    Register();
+                    string pp = FindPowerPoint();
+                    if (pp != null) { try { Process.Start(pp); } catch { } }
+                    MessageBox.Show("Update installiert.", AppName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return 0;
+                }
+
                 if (IsPowerPointRunning())
                 {
                     MessageBox.Show("Bitte PowerPoint schließen und das Setup erneut starten.",
@@ -68,6 +95,24 @@ namespace LiveWebRegionSetup
         }
 
         private static bool IsPowerPointRunning() => Process.GetProcessesByName("POWERPNT").Length > 0;
+
+        private static string FindPowerPoint()
+        {
+            try
+            {
+                using (var k = Registry.LocalMachine.OpenSubKey(
+                    @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\POWERPNT.EXE"))
+                    if (k?.GetValue(null) is string p && File.Exists(p)) return p;
+            }
+            catch { }
+            string[] cands =
+            {
+                @"C:\Program Files\Microsoft Office\root\Office16\POWERPNT.EXE",
+                @"C:\Program Files (x86)\Microsoft Office\root\Office16\POWERPNT.EXE"
+            };
+            foreach (var c in cands) if (File.Exists(c)) return c;
+            return null;
+        }
 
         private static bool WebView2Installed()
         {

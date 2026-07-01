@@ -44,7 +44,7 @@ Copy-Item (Join-Path $stage "*") $dist -Recurse -Force
 Copy-Item (Join-Path $PSScriptRoot "register.ps1") $dist
 Copy-Item (Join-Path $PSScriptRoot "unregister.ps1") $dist
 Copy-Item (Join-Path $PSScriptRoot "webview2-check.ps1") $dist
-Copy-Item (Join-Path $root "LICENSE.txt") $dist
+Copy-Item (Join-Path $root "LICENSE") $dist
 Copy-Item $setupExe $dist   # the one-click EXE installer
 
 # 5) install/uninstall ps1 (used by the .cmd wrappers)

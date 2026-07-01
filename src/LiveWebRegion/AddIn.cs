@@ -23,7 +23,6 @@ namespace LiveWebRegion
         private dynamic _app;     // PowerPoint.Application (late-bound)
         private dynamic _ribbon;  // Office.IRibbonUI (late-bound)
         private OverlayManager _overlays;
-        private AppEventConnector _events;
         private Control _ui;      // UI-thread invoker (deferred dialogs)
         private bool _previewEnabled;
 
@@ -39,17 +38,12 @@ namespace LiveWebRegion
 
                 _ui = new Control();
                 var _ = _ui.Handle; // realize handle on the UI thread
-
-                _events = new AppEventConnector();
-                _events.Connect((object)_app, HandleDoubleClick);
             }
             catch (Exception ex) { Log.Error("OnConnection failed", ex); }
         }
 
         public void OnDisconnection(ext_DisconnectMode RemoveMode, IntPtr custom)
         {
-            try { _events?.Disconnect(); } catch { }
-            _events = null;
             try { _overlays?.Stop(); } catch { }
             _overlays = null;
             try { _ui?.Dispose(); } catch { }
@@ -68,6 +62,8 @@ namespace LiveWebRegion
                 _overlays = new OverlayManager(_app);
                 _overlays.PreviewClosedByUser = OnPreviewClosedByUser;
                 _overlays.Start();
+                // Quiet background check; only informs if a newer version exists.
+                System.Threading.Tasks.Task.Run(() => Updater.NotifyIfUpdateAvailable());
             }
             catch (Exception ex) { Log.Error("OverlayManager start failed", ex); }
         }
@@ -170,28 +166,6 @@ namespace LiveWebRegion
             catch { return false; }
         }
 
-        // Double-click on a frame opens the edit dialog (and cancels the default action).
-        // Deferred via BeginInvoke so the modal dialog runs outside the COM event callback.
-        private bool HandleDoubleClick(object selection)
-        {
-            try
-            {
-                dynamic sel = selection;
-                int t = (int)sel.Type;            // 2 = shapes, 3 = text (inside a shape)
-                if (t != 2 && t != 3) return false;
-
-                dynamic shape;
-                try { shape = sel.ShapeRange.Item(1); } catch { return false; }
-                if (!ShapeRegions.IsRegion(shape)) return false;
-
-                Log.Info("Double-click on frame (selType=" + t + "); opening editor.");
-                dynamic captured = shape;
-                _ui?.BeginInvoke((Action)(() => EditRegionShape(captured)));
-                return true; // handled (don't enter text-edit on the frame)
-            }
-            catch (Exception ex) { Log.Error("HandleDoubleClick failed", ex); return false; }
-        }
-
         private void EditRegionShape(dynamic shape)
         {
             try
@@ -206,6 +180,12 @@ namespace LiveWebRegion
         {
             _previewEnabled = false;
             Invalidate(); // un-press the ribbon toggle
+        }
+
+        public void OnCheckUpdate(object control)
+        {
+            try { Updater.CheckAndInstall(_app); }
+            catch (Exception ex) { Log.Error("OnCheckUpdate failed", ex); }
         }
 
         public void OnShowHelp(object control) { OpenAsset("help.html"); }

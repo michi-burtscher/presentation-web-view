@@ -46,6 +46,13 @@
                   supertip="L&#228;dt die Web-Inhalte der aktuellen Folie neu." />
         </group>
         <group id="liveWebHelpGroup" label="Hilfe">
+          <button id="btnUpdate"
+                  label="Update"
+                  size="large"
+                  imageMso="ServerReportUploadToServer"
+                  onAction="OnCheckUpdate"
+                  screentip="Nach Updates suchen"
+                  supertip="Pr&#252;ft online, ob eine neue Version verf&#252;gbar ist, und installiert sie." />
           <button id="btnHelp"
                   label="Anleitung"
                   size="large"

@@ -252,15 +252,17 @@ namespace LiveWebRegion
             else if (IsHttpUrl(value)) { try { label = new Uri(value).Host; } catch { label = value; } }
             else label = Path.GetFileName(value);
 
-            // Self-describing card: title, link/host, edit hint.
+            // Self-describing card: title, link/host, and a hint that also helps a
+            // recipient who does not have the add-in installed.
             try
             {
                 dynamic tr = shape.TextFrame.TextRange;
-                tr.Text = "🌐  Live Web\n" + label + "\nDoppelklick oder 'Optionen' zum Bearbeiten";
+                tr.Text = "🌐  Live Web\n" + label +
+                          "\nLive-Ansicht mit dem Add-in „Live Web Region“\ngithub.com/michi-burtscher/presentation-web-view";
                 try { tr.ParagraphFormat.Alignment = 2; } catch { } // ppAlignCenter
                 try { tr.Font.Color.RGB = Rgb(30, 58, 138); } catch { }
                 try { dynamic p1 = tr.Paragraphs(1, 1); p1.Font.Bold = -1; p1.Font.Size = 18; } catch { }
-                try { dynamic p3 = tr.Paragraphs(3, 1); p3.Font.Size = 10; p3.Font.Color.RGB = Rgb(120, 130, 150); } catch { }
+                try { dynamic p3 = tr.Paragraphs(3, 2); p3.Font.Size = 10; p3.Font.Color.RGB = Rgb(120, 130, 150); } catch { }
             }
             catch { }
 

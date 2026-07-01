@@ -88,6 +88,5 @@ Pointer als `IntPtr` entgegengenommen werden) stehen als Kommentare im Quellcode
 
 ## Lizenz
 
-© 2026 Michael Burtscher. Alle Rechte vorbehalten. Siehe [LICENSE.txt](LICENSE.txt)
-(proprietär; persönliche/Evaluierungs-Nutzung). Für kommerzielle Lizenzierung den Autor
-kontaktieren.
+Freie Software unter der **MIT-Lizenz** © 2026 Michael Burtscher – siehe [LICENSE](LICENSE).
+Kostenlos nutzbar, weitergebbar und veränderbar, ohne Gewährleistung.
