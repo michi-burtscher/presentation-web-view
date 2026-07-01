@@ -23,14 +23,6 @@ namespace LiveWebRegion
         private int _builtPos = -1;
         private Control _invoker;   // deferred UI-thread actions
 
-        private bool _previewOn;
-        private PreviewForm _preview;
-        private string _previewTarget;
-        private bool _closingPreviewByUs;
-
-        /// <summary>Raised when the user closes the preview window (X).</summary>
-        public Action PreviewClosedByUser;
-
         private const int PollMs = 200;
 
         public OverlayManager(dynamic app) { _app = app; }
@@ -61,7 +53,6 @@ namespace LiveWebRegion
         {
             try { _timer?.Stop(); } catch { }
             CloseAllOverlays();
-            ClosePreview();
             try { _invoker?.Dispose(); } catch { }
         }
 
@@ -96,59 +87,6 @@ namespace LiveWebRegion
             foreach (var o in _overlays) o.Reload();
         }
 
-        public void SetPreview(bool on)
-        {
-            _previewOn = on;
-            if (!on) ClosePreview();
-        }
-
-        // Edit-mode preview: follow the selected web region in a floating window.
-        private void UpdatePreview()
-        {
-            try
-            {
-                if (_env == null) return;
-                dynamic shape = ShapeRegions.GetSelectedShape(_app);
-                if (shape == null || !ShapeRegions.IsRegion(shape)) return; // keep last preview
-                string target = ShapeRegions.ResolveTarget(shape);
-                if (string.IsNullOrEmpty(target)) return;
-
-                if (_preview == null || _preview.IsDisposed)
-                {
-                    _preview = new PreviewForm(_env);
-                    _preview.FormClosed += (s, e) =>
-                    {
-                        _preview = null;
-                        _previewTarget = null;
-                        if (!_closingPreviewByUs)
-                        {
-                            // User closed the window (X): turn the feature off.
-                            _previewOn = false;
-                            try { PreviewClosedByUser?.Invoke(); } catch { }
-                        }
-                    };
-                    _previewTarget = null;
-                    _preview.Show();
-                }
-                if (target != _previewTarget)
-                {
-                    _previewTarget = target;
-                    _preview.Navigate(target);
-                }
-            }
-            catch (Exception ex) { Log.Error("UpdatePreview failed", ex); }
-        }
-
-        private void ClosePreview()
-        {
-            if (_preview == null) return;
-            _closingPreviewByUs = true;
-            try { _preview.Close(); _preview.Dispose(); } catch { }
-            _closingPreviewByUs = false;
-            _preview = null;
-            _previewTarget = null;
-        }
-
         private void Poll()
         {
             try
@@ -159,11 +97,9 @@ namespace LiveWebRegion
                 if (count == 0)
                 {
                     if (_active) EndShow();
-                    if (_previewOn) UpdatePreview();
                     return;
                 }
 
-                ClosePreview(); // no preview during a running show
                 _active = true;
                 dynamic view = _app.SlideShowWindows.Item(1).View;
                 int pos = (int)view.CurrentShowPosition;

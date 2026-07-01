@@ -24,7 +24,6 @@ namespace LiveWebRegion
         private dynamic _ribbon;  // Office.IRibbonUI (late-bound)
         private OverlayManager _overlays;
         private Control _ui;      // UI-thread invoker (deferred dialogs)
-        private bool _previewEnabled;
 
         #region IDTExtensibility2
 
@@ -60,7 +59,6 @@ namespace LiveWebRegion
             try
             {
                 _overlays = new OverlayManager(_app);
-                _overlays.PreviewClosedByUser = OnPreviewClosedByUser;
                 _overlays.Start();
                 // Quiet background check; only informs if a newer version exists.
                 System.Threading.Tasks.Task.Run(() => Updater.NotifyIfUpdateAvailable());
@@ -153,13 +151,6 @@ namespace LiveWebRegion
             catch (Exception ex) { Log.Error("OnReload failed", ex); }
         }
 
-        public void OnTogglePreview(object control, bool pressed)
-        {
-            _previewEnabled = pressed;
-            try { _overlays?.SetPreview(pressed); } catch (Exception ex) { Log.Error("OnTogglePreview failed", ex); }
-        }
-        public bool OnGetPreviewPressed(object control) { return _previewEnabled; }
-
         public bool OnGetRegionSelected(object control)
         {
             try { return ShapeRegions.IsRegion(ShapeRegions.GetSelectedShape(_app)); }
@@ -174,12 +165,6 @@ namespace LiveWebRegion
                 if (res != null) { ShapeRegions.SetRegion(shape, res); Invalidate(); }
             }
             catch (Exception ex) { Log.Error("EditRegionShape failed", ex); Native.Warn("Fehler: " + ex.Message); }
-        }
-
-        private void OnPreviewClosedByUser()
-        {
-            _previewEnabled = false;
-            Invalidate(); // un-press the ribbon toggle
         }
 
         public void OnCheckUpdate(object control)

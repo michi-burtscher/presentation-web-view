@@ -29,14 +29,6 @@
                   supertip="Entfernt die Web-Zuordnung von der markierten Form." />
         </group>
         <group id="liveWebToolsGroup" label="Werkzeuge">
-          <toggleButton id="btnPreview"
-                  label="Vorschau"
-                  size="large"
-                  imageMso="ViewNormalViewPowerPoint"
-                  onAction="OnTogglePreview"
-                  getPressed="OnGetPreviewPressed"
-                  screentip="Vorschau im Bearbeitungsmodus"
-                  supertip="Zeigt die Website des markierten Frames in einem Vorschaufenster &#8211; ohne F5." />
           <button id="btnReload"
                   label="Neu laden"
                   size="large"
@@ -49,7 +41,7 @@
           <button id="btnUpdate"
                   label="Update"
                   size="large"
-                  imageMso="ServerReportUploadToServer"
+                  imageMso="SynchronizeList"
                   onAction="OnCheckUpdate"
                   screentip="Nach Updates suchen"
                   supertip="Pr&#252;ft online, ob eine neue Version verf&#252;gbar ist, und installiert sie." />

@@ -262,21 +262,20 @@ namespace LiveWebRegion
             try
             {
                 dynamic tr = shape.TextFrame.TextRange;
-                tr.Text = "🌐  Live Web\n" + label +
-                          "\nBenötigt das Add-in „Live Web Region“ für die Live-Ansicht." +
-                          "\nDownload: github.com/michi-burtscher/presentation-web-view/releases" +
-                          "\n(im Präsentationsmodus genügt ein Klick auf dieses Feld)";
+                tr.Text = "🌐  Live Web\n" + label;
                 try { tr.ParagraphFormat.Alignment = 2; } catch { } // ppAlignCenter
                 try { tr.Font.Color.RGB = Rgb(30, 58, 138); } catch { }
                 try { dynamic p1 = tr.Paragraphs(1, 1); p1.Font.Bold = -1; p1.Font.Size = 18; } catch { }
-                try { dynamic p3 = tr.Paragraphs(3, 3); p3.Font.Size = 10; p3.Font.Color.RGB = Rgb(120, 130, 150); } catch { }
-                try { dynamic pUrl = tr.Paragraphs(4, 1); pUrl.Font.Bold = -1; pUrl.Font.Color.RGB = Rgb(80, 140, 220); } catch { }
+                try { dynamic p2 = tr.Paragraphs(2, 1); p2.Font.Size = 12; } catch { }
             }
             catch { }
 
-            // Clickable in slideshow for recipients without the add-in: opens the
-            // installer download. (With the add-in, the WebView2 overlay covers it.)
+            // Recipients without the add-in can click the frame in the slide show to
+            // reach the installer download. Kept off the visible card so authors (who
+            // already have the add-in) see a clean frame. Address is also on the shape's
+            // hyperlink screentip.
             try { shape.ActionSettings.Item(1).Hyperlink.Address = DownloadUrl; } catch { }
+            try { shape.ActionSettings.Item(1).Hyperlink.ScreenTip = "Add-in „Live Web Region“ herunterladen"; } catch { }
 
             try
             {
