@@ -1,9 +1,11 @@
 {
-  "version": "v01",
+  "version": "v02",
   "notes": [
-    "First release version v01"
+    "new version v02",
+    "small bug fixes",
+    "test for update"
   ],
-  "exe_url": "https://github.com/michi-burtscher/presentation-web-view/releases/download/v01/LiveWebRegionSetup.exe",
-  "sha256": "",
+  "exe_url": "https://github.com/michi-burtscher/presentation-web-view/releases/download/v02/LiveWebRegionSetup.exe",
+  "sha256": "1aae9ce4f23405dda0c1cbf9f86228e8599186f37468da98e5d03e4602f20ab7",
   "page_url": "https://github.com/michi-burtscher/presentation-web-view/releases"
 }
