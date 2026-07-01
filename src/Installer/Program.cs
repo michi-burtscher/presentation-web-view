@@ -133,8 +133,15 @@ namespace LiveWebRegionSetup
 
         private static void ExtractPayload()
         {
-            if (Directory.Exists(AppDir)) Directory.Delete(AppDir, true);
-            Directory.CreateDirectory(AppDir);
+            string parent = Path.GetDirectoryName(AppDir);
+            Directory.CreateDirectory(parent);
+
+            // 1) Extract into a fresh staging dir next to AppDir. This never touches the
+            //    live files, so a still-loaded (locked) DLL cannot corrupt the install.
+            string stage = AppDir + ".new";
+            string old = AppDir + ".old";
+            if (Directory.Exists(stage)) Directory.Delete(stage, true);
+            Directory.CreateDirectory(stage);
 
             var asm = Assembly.GetExecutingAssembly();
             string resName = null;
@@ -146,9 +153,41 @@ namespace LiveWebRegionSetup
             using (var rs = asm.GetManifestResourceStream(resName))
             using (var fs = File.Create(tmp))
                 rs.CopyTo(fs);
-
-            ZipFile.ExtractToDirectory(tmp, AppDir);
+            ZipFile.ExtractToDirectory(tmp, stage);
             try { File.Delete(tmp); } catch { }
+
+            // 2) Swap staging into place with atomic directory renames. Retry while the
+            //    old LiveWebRegion.dll is still image-locked (the CLR needs a moment to
+            //    unload it after PowerPoint exits). A loaded DLL blocks the rename, so if
+            //    every retry fails we abort WITHOUT having deleted the existing install.
+            try { if (Directory.Exists(old)) Directory.Delete(old, true); } catch { }
+            Exception last = null;
+            for (int i = 0; i < 40; i++) // ~40 * 750 ms ≈ 30 s grace period
+            {
+                try
+                {
+                    if (Directory.Exists(AppDir)) Directory.Move(AppDir, old);
+                    Directory.Move(stage, AppDir);
+                    last = null;
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    last = ex;
+                    // If the pre-move half-succeeded, restore so AppDir is never missing.
+                    if (!Directory.Exists(AppDir) && Directory.Exists(old))
+                        try { Directory.Move(old, AppDir); } catch { }
+                    System.Threading.Thread.Sleep(750);
+                }
+            }
+            if (last != null)
+            {
+                try { if (Directory.Exists(stage)) Directory.Delete(stage, true); } catch { }
+                throw new Exception(
+                    "Die Add-in-Dateien sind noch gesperrt – vermutlich läuft PowerPoint noch. " +
+                    "Bitte ALLE PowerPoint-Fenster schließen (Änderungen speichern) und das Update erneut ausführen.", last);
+            }
+            try { if (Directory.Exists(old)) Directory.Delete(old, true); } catch { }
         }
 
         private static void RemoveFiles()
