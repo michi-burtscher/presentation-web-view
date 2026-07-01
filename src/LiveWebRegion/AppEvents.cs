@@ -41,15 +41,34 @@ namespace LiveWebRegion
     /// <summary>Sink that forwards WindowBeforeDoubleClick to a handler.</summary>
     [ComVisible(true)]
     [ClassInterface(ClassInterfaceType.None)]
-    internal sealed class AppEventSink : IEApplicationEvents
+    [ComDefaultInterface(typeof(IEApplicationEvents))]
+    internal sealed class AppEventSink : IEApplicationEvents, ICustomQueryInterface
     {
         // Handler returns true if it handled the double-click (cancel default action).
         public Func<object, bool> OnDoubleClick;
 
         public void WindowBeforeDoubleClick(object Sel, ref bool Cancel)
         {
+            Log.Info("SINK: WindowBeforeDoubleClick fired.");
             try { if (OnDoubleClick != null && OnDoubleClick(Sel)) Cancel = true; }
             catch (Exception ex) { Log.Error("WindowBeforeDoubleClick failed", ex); }
+        }
+
+        // The CLR does not auto-expose a pure dispinterface IID via QueryInterface;
+        // PowerPoint's connection point QIs for it before firing, so answer it here.
+        public CustomQueryInterfaceResult GetInterface(ref Guid iid, out IntPtr ppv)
+        {
+            ppv = IntPtr.Zero;
+            if (iid == typeof(IEApplicationEvents).GUID)
+            {
+                try
+                {
+                    ppv = Marshal.GetComInterfaceForObject(this, typeof(IEApplicationEvents));
+                    if (ppv != IntPtr.Zero) return CustomQueryInterfaceResult.Handled;
+                }
+                catch (Exception ex) { Log.Error("GetInterface failed", ex); }
+            }
+            return CustomQueryInterfaceResult.NotHandled;
         }
     }
 
@@ -73,7 +92,8 @@ namespace LiveWebRegion
 
                 _sink = new AppEventSink { OnDoubleClick = onDoubleClick };
                 _cp.Advise(_sink, out _cookie);
-                Log.Info("App events connected (cookie=" + _cookie + ").");
+                try { _cp.GetConnectionInterface(out Guid ci); Log.Info("App events connected (cookie=" + _cookie + ", iface=" + ci.ToString("B") + ")."); }
+                catch { Log.Info("App events connected (cookie=" + _cookie + ")."); }
             }
             catch (Exception ex) { Log.Error("AppEventConnector.Connect failed", ex); }
         }
