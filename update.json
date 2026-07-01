@@ -1,11 +1,10 @@
 {
   "version": "v02",
   "notes": [
-    "new version v02",
-    "small bug fixes",
-    "test for update"
+    "Update-Installer repariert: zerstoert den App-Ordner nicht mehr, wenn PowerPoint noch offen ist",
+    "Dateien werden jetzt atomar getauscht und wiederholt, bis PowerPoint die DLL freigibt"
   ],
   "exe_url": "https://github.com/michi-burtscher/presentation-web-view/releases/download/v02/LiveWebRegionSetup.exe",
-  "sha256": "1aae9ce4f23405dda0c1cbf9f86228e8599186f37468da98e5d03e4602f20ab7",
+  "sha256": "d23ab8638725101b8ffb49cd2cdd42258529ca492fa5bd4215a3fb07f002333f",
   "page_url": "https://github.com/michi-burtscher/presentation-web-view/releases"
 }
