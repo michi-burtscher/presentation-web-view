@@ -3,7 +3,7 @@ namespace LiveWebRegion
     /// <summary>Single source of truth for the version and the update manifest URL.</summary>
     internal static class AppInfo
     {
-        public const string Version = "v02";
+        public const string Version = "v03";
 
         // Public raw URL of update.json on the default branch (checked for new versions).
         public const string ManifestUrl =
