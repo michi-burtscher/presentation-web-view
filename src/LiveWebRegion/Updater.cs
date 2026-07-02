@@ -75,6 +75,10 @@ namespace LiveWebRegion
                         "Live Web – Update", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) != DialogResult.OK)
                     return;
 
+                // Save open decks (so Quit isn't blocked by "save?" dialogs) and record
+                // their paths so the installer can reopen them after the update.
+                PrepareCloseAndReopen(app);
+
                 Process.Start(new ProcessStartInfo(tmp, "/update") { UseShellExecute = true });
                 try { app.Quit(); } catch (Exception ex) { Log.Error("app.Quit for update failed", ex); }
             }
@@ -83,6 +87,40 @@ namespace LiveWebRegion
                 Log.Error("CheckAndInstall failed", ex);
                 Native.Warn("Update fehlgeschlagen: " + ex.Message);
             }
+        }
+
+        // File the add-in writes and the installer reads to reopen decks post-update.
+        internal static string ReopenListPath =>
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                         "LiveWebRegion", "reopen.txt");
+
+        // Save unsaved-but-on-disk presentations (silent; the user already confirmed the
+        // restart) and record all on-disk deck paths for the installer to reopen.
+        private static void PrepareCloseAndReopen(dynamic app)
+        {
+            var paths = new System.Collections.Generic.List<string>();
+            try
+            {
+                dynamic pres = app.Presentations;
+                int n = (int)pres.Count;
+                for (int i = 1; i <= n; i++)
+                {
+                    dynamic p = pres.Item(i);
+                    string dir = ""; try { dir = (string)p.Path; } catch { } // empty => never saved
+                    if (string.IsNullOrEmpty(dir)) continue;                  // can't reopen unsaved decks
+                    try { if ((int)p.Saved == 0) p.Save(); }                  // msoFalse(0) => dirty
+                    catch (Exception ex) { Log.Error("Save before update failed", ex); }
+                    try { string full = (string)p.FullName; if (!string.IsNullOrEmpty(full)) paths.Add(full); } catch { }
+                }
+            }
+            catch (Exception ex) { Log.Error("Enumerate presentations failed", ex); }
+
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(ReopenListPath));
+                File.WriteAllLines(ReopenListPath, paths);
+            }
+            catch (Exception ex) { Log.Error("Write reopen list failed", ex); }
         }
 
         private static Manifest Fetch()

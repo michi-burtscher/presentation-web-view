@@ -1,12 +1,11 @@
 {
   "version": "v03",
   "notes": [
-    "version v03",
-    "udate bug - dll",
-    "missing icons",
-    "removed preview"
+    "Update schliesst PowerPoint jetzt zuverlaessig (offene Praesentationen werden gespeichert)",
+    "Offene Praesentationen werden nach dem Update automatisch wieder geoeffnet",
+    "Update-Installer zerstoert den App-Ordner nicht mehr bei laufendem PowerPoint"
   ],
   "exe_url": "https://github.com/michi-burtscher/presentation-web-view/releases/download/v03/LiveWebRegionSetup.exe",
-  "sha256": "f86bf84404decc9d6126339d463b48aa2df1cd184095b52d82c1886c46217900",
+  "sha256": "bc95eb84d08e8f7bb94532e1d764c3d5c73f661af6dcc0dc586c0b6f1f640a5b",
   "page_url": "https://github.com/michi-burtscher/presentation-web-view/releases"
 }

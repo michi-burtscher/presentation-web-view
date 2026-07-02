@@ -51,8 +51,7 @@ namespace LiveWebRegionSetup
                     System.Threading.Thread.Sleep(1500); // let file locks release
                     ExtractPayload();
                     Register();
-                    string pp = FindPowerPoint();
-                    if (pp != null) { try { Process.Start(pp); } catch { } }
+                    ReopenPresentations();
                     MessageBox.Show("Update installiert.", AppName, MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return 0;
                 }
@@ -95,6 +94,32 @@ namespace LiveWebRegionSetup
         }
 
         private static bool IsPowerPointRunning() => Process.GetProcessesByName("POWERPNT").Length > 0;
+
+        private static string ReopenListPath =>
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                         "LiveWebRegion", "reopen.txt");
+
+        // Reopen the decks that were open before the update (paths recorded by the add-in).
+        // ShellExecute routes each .pptx into a single reused PowerPoint instance.
+        private static void ReopenPresentations()
+        {
+            string[] files = new string[0];
+            try { if (File.Exists(ReopenListPath)) files = File.ReadAllLines(ReopenListPath); } catch { }
+            try { if (File.Exists(ReopenListPath)) File.Delete(ReopenListPath); } catch { }
+
+            var open = Array.FindAll(files, f => !string.IsNullOrWhiteSpace(f) && File.Exists(f));
+            if (open.Length == 0)
+            {
+                string pp = FindPowerPoint();
+                if (pp != null) { try { Process.Start(pp); } catch { } }
+                return;
+            }
+            for (int i = 0; i < open.Length; i++)
+            {
+                try { Process.Start(new ProcessStartInfo(open[i]) { UseShellExecute = true }); } catch { }
+                System.Threading.Thread.Sleep(2000); // let the first instance come up before the rest attach
+            }
+        }
 
         private static string FindPowerPoint()
         {
