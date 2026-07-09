@@ -1,11 +1,10 @@
 {
-  "version": "v03",
+  "version": "v04",
   "notes": [
-    "Update schliesst PowerPoint jetzt zuverlaessig (offene Praesentationen werden gespeichert)",
-    "Offene Praesentationen werden nach dem Update automatisch wieder geoeffnet",
-    "Update-Installer zerstoert den App-Ordner nicht mehr bei laufendem PowerPoint"
+    "new version v04",
+    "endless animation error"
   ],
-  "exe_url": "https://github.com/michi-burtscher/presentation-web-view/releases/download/v03/LiveWebRegionSetup.exe",
-  "sha256": "bc95eb84d08e8f7bb94532e1d764c3d5c73f661af6dcc0dc586c0b6f1f640a5b",
+  "exe_url": "https://github.com/michi-burtscher/presentation-web-view/releases/download/v04/LiveWebRegionSetup.exe",
+  "sha256": "ddbe8598727b71fe259a4ce2fc91116046145ecc7b0ddefd38f20c89ee165f06",
   "page_url": "https://github.com/michi-burtscher/presentation-web-view/releases"
 }

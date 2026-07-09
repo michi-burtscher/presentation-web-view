@@ -36,7 +36,13 @@ namespace LiveWebRegion
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "LiveWebRegion", "WebView2");
             // Shared environment so all overlays can share one user-data folder.
-            CoreWebView2Environment.CreateAsync(null, udf, null)
+            // Disable GPU: a hosted WebView2 (child window of PowerPoint's slideshow)
+            // sharing hardware GPU compositing with a page that animates every frame
+            // crashes the WebView2 GPU process and takes POWERPNT down with it.
+            // Software rendering is rock-solid inside Office and fast enough here.
+            var envOptions = new CoreWebView2EnvironmentOptions(
+                "--disable-gpu --disable-gpu-compositing");
+            CoreWebView2Environment.CreateAsync(null, udf, envOptions)
                 .ContinueWith(t =>
                 {
                     if (t.IsFaulted) Log.Error("WebView2 env failed", t.Exception);
